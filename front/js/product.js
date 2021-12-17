@@ -1,5 +1,5 @@
 const id = new URL(window.location.href).searchParams.get('id')
-console.log(window.location.href)
+console.log(new URL(window.location.href))
 const addToCartBtn = document.getElementById('addToCart')
 // let localStorage = Window.localStorage
 fetch('http://localhost:3000/api/products/'+ id)

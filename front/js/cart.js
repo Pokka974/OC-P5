@@ -73,12 +73,12 @@ for(let i of storage){
         input.className = "itemQuantity"
         input.min = 1
         input.max = 100
-        input.value = i[2]
+        // input.value = i[2]
+        input.setAttribute('value', 0)
         //ADD <p> in delete div
         let p4 = document.createElement("p")
         p4.textContent = "Supprimer"
         p4.classList = "deleteItem"
-
         //ADD implement everything into the HTML
         section.appendChild(article).append(divImg, divContent)
         divImg.appendChild(img)
@@ -90,9 +90,46 @@ for(let i of storage){
     })
 }
 
-const total = document.getElementById('totalQuantity')
+var total = document.getElementById('totalQuantity')
 total.textContent = totalQuantity
 
-let allInputs = document.getElementsByClassName("itemQuantity")
-console.log(allInputs)
-console.log(allInputs[0])
+
+
+window.addEventListener('load', function (){
+
+    let allInputs = document.getElementsByClassName("itemQuantity")
+    console.log(allInputs)
+    for(let i of allInputs){
+        i.addEventListener('change', (e) => {
+            console.log(e.target.valueAsNumber)
+
+            //Updating the quantity in view
+            updateQuantity(i)
+        })
+    }
+})
+
+function updateQuantity(i){
+
+    let quant = i.closest(".cart__item__content__settings__quantity").firstElementChild
+
+    //Updating the total amount
+    let updateNumb = i.valueAsNumber - parseInt(quant.textContent.split(' ')[2])
+    totalQuantity += updateNumb
+    total.textContent = totalQuantity
+    
+    //Get the id and color of selected item
+    let id = i.closest('.cart__item').dataset.id
+    let color = i.closest('.cart__item').dataset.color
+    quant.textContent = "Qté : " + i.valueAsNumber
+
+    //updating the localstorage
+    for(let l = 0; l < localStorage.length; l++){
+        let loc = JSON.parse(localStorage.getItem(localStorage.key(l)))
+        loc.splice(2, 1, i.valueAsNumber)
+        if(loc[0] == id && loc[1] == color){
+            localStorage.setItem(localStorage.key(l), JSON.stringify(loc))
+            break;
+        }
+    }
+}
