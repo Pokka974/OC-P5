@@ -1,3 +1,5 @@
+// if(typeof(localStorage.getItem('basket')) != 'undefined') localStorage.setItem('basket', new Array())
+
 fetch('http://localhost:3000/api/products')
   .then(response => response.json())
   .then(data => {

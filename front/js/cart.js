@@ -1,102 +1,118 @@
-// GET the localStorage content
-var storage = [];
-var totalQuantity = 0;
-
-for (var j = 0; j < localStorage.length; j++){
-    storage.push(JSON.parse(localStorage.getItem(localStorage.key(j))))
-}
-console.log(storage);
-
+let actualBasket = _lsGet('basket')
 const section = document.getElementById("cart__items")
-//loop in the database from the ids of the localStorage content
-for(let i of storage){
-    
-    //get the total amount of product in the cart
-    totalQuantity += parseInt(i[2])
 
-    fetch('http://localhost:3000/api/products/'+ i[0])
+for(let i of actualBasket){
+
+    fetch('http://localhost:3000/api/products/'+ i.id)
     .then(response => response.json())
     .then(product => {
-        // console.log(product)
 
-        //ADD article
-        let article = document.createElement("article")
-        article.className = "cart__item"
-        article.setAttribute("data-id", product._id)
-        article.setAttribute("data-color", i[1])
-
-        //ADD divImg
-        let divImg = document.createElement("div")
-        divImg.className = "cart__item__img"
-
-        //ADD img
-        let img = document.createElement("img")
-        img.src = product.imageUrl
-        img.alt = product.altTxt
-
-        //ADD divContent
-        let divContent = document.createElement("div")
-        divContent.className ="cart__item__content"
-
-        //ADD divContentDescription
-        let divContentDescription = document.createElement("div")
-        divContentDescription.className = "cart__item__content__description"
-
-        //ADD H2 and <p>s
-        let h2 = document.createElement("h2")
-        h2.textContent = product.name
-
-        let p1 = document.createElement("p")
-        p1.textContent = i[1]
-        
-        let p2 = document.createElement("p")
-        p2.className = 'item__price'
-        p2.textContent = product.price + " €"
-
-        //ADD content settings
-        let divContentSettings = document.createElement("div")
-        divContentSettings.className = "cart__item__content__settings"
-
-        //ADD divs settings quantity and settings delete
-        let divSettingsQuantity = document.createElement("div")
-        divSettingsQuantity.className = "cart__item__content__settings__quantity"
-
-        let divSettingsDelete = document.createElement("div")
-        divSettingsDelete.className = "cart__item__content__settings__delete"
-        
-        //ADD <p> and input for quantity
-        let p3 = document.createElement("p")
-        p3.textContent = "Qté : " + i[2]
-
-        let input = document.createElement("input")
-        input.type = "number"
-        input.name = "itemQuant"
-        input.className = "itemQuantity"
-        input.min = 1
-        input.max = 100
-        // input.value = i[2]
-        input.setAttribute('value', 0)
-        //ADD <p> in delete div
-        let p4 = document.createElement("p")
-        p4.textContent = "Supprimer"
-        p4.classList = "deleteItem"
-        //ADD implement everything into the HTML
-        section.appendChild(article).append(divImg, divContent)
-        divImg.appendChild(img)
-        divContent.append(divContentDescription, divContentSettings)
-        divContentDescription.append(h2, p1, p2)
-        divContentSettings.append(divSettingsQuantity, divSettingsDelete)
-        divSettingsQuantity.append(p3, input)
-        divSettingsDelete.appendChild(p4)
-    })
+        displayProduct(product, i)
+    });
 }
 
-var total = document.getElementById('totalQuantity')
+document.getElementById('cart__order__form').addEventListener('submit', e => {
+    e.preventDefault()
+    console.log('clic on submit')
+    checkInputs()
+    if(allInputsAreValid()){
+        // Create an Object
+        // POST in API
+    }
+    
+});
 
-total.textContent = totalQuantity === 0 ? 0 : totalQuantity
+function allInputsAreValid(){
+    let errors = document.getElementsByClassName('error')
+    console.log(errors)
+    if(errors.length != 0){
+        console.log("it's not valid")
+        return false;
+    } else {
+        console.log('Its valid !')
+        return true;
+    }
+}
 
+function checkInputs(){
+    const firstName = document.getElementsByClassName('cart__order__form__question')[0].children[1]
+    const lastName = document.getElementsByClassName('cart__order__form__question')[1].children[1]
+    const address = document.getElementsByClassName('cart__order__form__question')[2].children[1]
+    const city = document.getElementsByClassName('cart__order__form__question')[3].children[1]
+    const email = document.getElementsByClassName('cart__order__form__question')[4].children[1]
 
+    console.log(firstName)
+    if(firstName.value == ''){
+        setErrorFor(firstName, 'First name cannot be blank')
+    }else if (!isAName(firstName.value)){
+        setErrorFor(firstName, 'Not a valid first name')
+    }else {
+        setSuccessFor(firstName)
+    }
 
+    if(lastName.value == ''){
+        setErrorFor(lastName, 'Last name cannot be blank')
+    } else if (!isAName(lastName.value)){
+        setErrorFor(lastName, 'Not a valid last name')
+    } else {
+        setSuccessFor(lastName)
+    }
+
+    if(address.value == ''){
+        setErrorFor(address, 'Address cannot be blank')
+    } else if (!isAnAddress(address.value)){
+        setErrorFor(address, 'Not a valid address')
+    } else {
+        setSuccessFor(address)
+    }
+
+    if(city.value == ''){
+        setErrorFor(city, 'City cannot be blank')
+    } else if (!isACity(city.value)){
+        setErrorFor(city, 'Not a valid city')
+    } else {
+        setSuccessFor(city)
+    }
+
+    if(email.value == ''){
+        setErrorFor(email, 'Email cannot be blank')
+    } else if (!isAnEmail(email.value)){
+        setErrorFor(email, 'Not a valid email')
+    } else {
+        setSuccessFor(email)
+    }
+}
+
+function setErrorFor(input, message) {
+	const formControl = input.parentElement;
+	const errorP = formControl.children[2]
+	formControl.className = 'cart__order__form__question error';
+	errorP.innerText = message;
+}
+
+function setSuccessFor(input) {
+	const formControl = input.parentElement;
+	formControl.className = 'cart__order__form__question success';
+}
+
+function isAName(name){
+    return /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u.test(name);
+}
+
+function isEmail(email) {
+	return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+}
+
+function isAnAddress(address){
+    return /^(\d+) ?([A-Za-z](?= ))? (.*?) ([^ ]+?) ?((?<= )APT)? ?((?<= )\d*)?$/.test(address);
+}
+
+function isACity(city){
+    return /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/.test(city);
+}
+function isAnEmail(email){
+    return /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(email);
+}
 window.addEventListener('load', function (){
 
     let allInputs = document.getElementsByClassName("itemQuantity")
@@ -116,12 +132,11 @@ window.addEventListener('load', function (){
             deleteItem(j)
         })
     }
-
+    updateTotalQuantity()
     updateTotalPrice()
 })
 
 function updateQuantity(i){
-    let promise1;
     let quant = i.closest(".cart__item__content__settings__quantity").firstElementChild
 
     let inputIsEmpty = i.value.toString().trim().length == 0 ? true : false
@@ -135,21 +150,14 @@ function updateQuantity(i){
     }
     
     //updating the localstorage
-    for(let l = 0; l < localStorage.length; l++){
-        let loc = JSON.parse(localStorage.getItem(localStorage.key(l)))
-        loc.splice(2, 1, i.valueAsNumber)
-        if(loc[0] == id && loc[1] == color){
-            promise1 = new Promise((resolve, reject) => {
-                resolve(localStorage.setItem(localStorage.key(l), JSON.stringify(loc)))
-            })
-            break;
-        }
-    }
-
-    promise1.then((value) => {
+        //check if this selection already exists in the cart
+    if(sameProduct(id, color)){
+        console.log("SAME")
+        let concernedItem = findItemByIdAnColor(id, color)
+        editQuantity(concernedItem, i.value)
         updateTotalQuantity()
         updateTotalPrice()
-    })
+    }
     
 }
 
@@ -157,7 +165,7 @@ function deleteItem(i){
     if(confirm('Voulez vous vraiment supprimer article du panier ?')){
         // cart__item
         let promise2
-        let quant = i.closest('.cart__item__content__settings').firstElementChild.children[0]
+        let id = i.closest('.cart__item').dataset.id
         let found = false
         //GET the color and the name of the corresponding item
         let bloc = i.closest('.cart__item')
@@ -165,18 +173,23 @@ function deleteItem(i){
         let name = bloc_description.children[0]
         let color = bloc_description.children[1]
         console.log('Click on item ' + name.textContent + ' ' + color.textContent)
-
-        //find it in the localStorage and remove
-        for(let i = 0 ; i < localStorage.length; i++){
-            console.log(localStorage.key(i))
-            if(localStorage.key(i) == name.textContent + ' ' + color.textContent){
-                console.log('found one !')
-                localStorage.removeItem(localStorage.key(i))
+        
+        
+        let actualBasket = _lsGet('basket')
+        let itemToDelete = findItemByIdAnColor(id, color.textContent)
+    
+        for(let [i, v] of actualBasket.entries()){
+            if(JSON.stringify(v) === JSON.stringify(itemToDelete)){
+                actualBasket.splice(i, 1)
+                _lsSet('basket', actualBasket)
+                // bloc.remove()
                 found = true
+                break;
             }
         }
 
-        //delete the HTML element in the DOM
+        console.log(actualBasket)
+        // delete the HTML element in the DOM
         if(found){
             promise2 = new Promise((resolve, reject) => {
                 resolve(bloc.remove())
@@ -233,4 +246,127 @@ function updateTotalQuantity(){
     console.log(totalQuantity)
 
     totalQuantityElement.textContent = totalQuantity
+}
+
+function displayProduct(product, i){
+    //ADD article
+    let article = document.createElement("article")
+    article.className = "cart__item"
+    article.setAttribute("data-id", product._id)
+    article.setAttribute("data-color", i.color)
+
+    //ADD divImg
+    let divImg = document.createElement("div")
+    divImg.className = "cart__item__img"
+
+    //ADD img
+    let img = document.createElement("img")
+    img.src = product.imageUrl
+    img.alt = product.altTxt
+
+    //ADD divContent
+    let divContent = document.createElement("div")
+    divContent.className ="cart__item__content"
+
+    //ADD divContentDescription
+    let divContentDescription = document.createElement("div")
+    divContentDescription.className = "cart__item__content__description"
+
+    //ADD H2 and <p>s
+    let h2 = document.createElement("h2")
+    h2.textContent = product.name
+
+    let p1 = document.createElement("p")
+    p1.textContent = i.color
+    
+    let p2 = document.createElement("p")
+    p2.className = 'item__price'
+    p2.textContent = product.price + " €"
+
+    //ADD content settings
+    let divContentSettings = document.createElement("div")
+    divContentSettings.className = "cart__item__content__settings"
+
+    //ADD divs settings quantity and settings delete
+    let divSettingsQuantity = document.createElement("div")
+    divSettingsQuantity.className = "cart__item__content__settings__quantity"
+
+    let divSettingsDelete = document.createElement("div")
+    divSettingsDelete.className = "cart__item__content__settings__delete"
+    
+    //ADD <p> and input for quantity
+    let p3 = document.createElement("p")
+    p3.textContent = "Qté : " + i.quantity
+
+    let input = document.createElement("input")
+    input.type = "number"
+    input.name = "itemQuant"
+    input.className = "itemQuantity"
+    input.min = 1
+    input.max = 100
+    // input.value = i[2]
+    input.setAttribute('value', 0)
+    //ADD <p> in delete div
+    let p4 = document.createElement("p")
+    p4.textContent = "Supprimer"
+    p4.classList = "deleteItem"
+    //ADD implement everything into the HTML
+    section.appendChild(article).append(divImg, divContent)
+    divImg.appendChild(img)
+    divContent.append(divContentDescription, divContentSettings)
+    divContentDescription.append(h2, p1, p2)
+    divContentSettings.append(divSettingsQuantity, divSettingsDelete)
+    divSettingsQuantity.append(p3, input)
+    divSettingsDelete.appendChild(p4)
+}
+
+function sameProduct(id, color){
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        if(i.id == id && i.color == color) return true
+    }
+
+    return false
+}
+
+function findItemByIdAnColor(id, color){
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        console.log("TEST "+ i)
+        if(i.id === id && i.color === color) return i
+    }
+}
+
+function editQuantity(value, quant){
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        if(JSON.stringify(value) === JSON.stringify(i)) i.quantity = quant
+    }
+
+    _lsSet('basket', actualBasket)
+}
+
+function _lsGet(key) {
+    try {
+        if(localStorage.getItem(key)){
+            return JSON.parse(localStorage.getItem(key))
+        }
+        else{
+            return undefined
+        }
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+function _lsSet(key, val){
+    try {
+        localStorage.setItem(key, JSON.stringify(val))
+        console.log("NEW ITEM ADDED IN LOCALSTORAGE\n"+ JSON.stringify(val))
+    } catch (e) {
+        console.error(e)
+    }
 }

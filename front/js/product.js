@@ -1,7 +1,6 @@
 const id = new URL(window.location.href).searchParams.get('id')
-console.log(new URL(window.location.href))
 const addToCartBtn = document.getElementById('addToCart')
-// let localStorage = Window.localStorage
+console.log(_lsGet('Kanap Calycé Red'))
 fetch('http://localhost:3000/api/products/'+ id)
     .then(response => response.json())
     .then(product => {
@@ -42,58 +41,89 @@ fetch('http://localhost:3000/api/products/'+ id)
         
         // ADD the add to cart button listener
         addToCartBtn.onclick = function(){
+
+            //Selected Color
             let selectedColor = selectEl.options[selectEl.selectedIndex].text
-            console.log(product._id)
-            console.log(selectedColor)
-            console.log(quant.value)
+
             //check if a color and a quantity has been selected
-            if(quant.value > 0 && selectedColor != "--SVP, choisissez une couleur --"){
-
-                let dataArray = ["", "", ""]
-                dataArray[0] = product._id
-                dataArray[1] = selectedColor
-                dataArray[2] = parseInt(quant.value)
-                let key = product.name + ' ' +  dataArray[1] //define a key with the name and the color
-
-                //check if this selection already exists in the cart
-                if(sameProduct(product._id, selectedColor)){
-                    let theSameProduct = JSON.parse(findItemByIdAnColor(product._id, selectedColor))
-                    dataArray[2] = dataArray[2] + parseInt(theSameProduct[2])
-                    console.log(`Added ${theSameProduct[2]} to the product ${theSameProduct[0]} and now he got ${dataArray[2]}`)
-
-                    localStorage.removeItem(key)
-                    localStorage.setItem(key, JSON.stringify(dataArray))
+            if(quant.value > 0 && quant.value < 100 && selectedColor != "--SVP, choisissez une couleur --"){
+                //check if 'basket' exists in local storage
+                if('basket' in localStorage){
+                    //check if this selection already exists in the cart
+                    if(sameProduct(product._id, selectedColor)){
+                        console.log("SAME")
+                        let concernedItem = findItemByIdAnColor(product._id, selectedColor)
+                        editQuantity(concernedItem, quant.value)
+                    }
+                    //IF NOT, create a new line in local storage
+                    else{
+                        let actualBasket = _lsGet('basket')
+                        let currentProduct = {id: product._id, color: selectedColor, quantity: quant.value}
+                        actualBasket.push(currentProduct)
+                        _lsSet('basket', actualBasket)
+                    }
+                    
                 }
+                //IF 'basket' is not already created, create the first line
                 else{
-                    localStorage.setItem(key, JSON.stringify(dataArray))
+                    _lsSet('basket', [{id: product._id, color: selectedColor, quantity: quant.value}])
                 }
             }
             else{
-                console.log("No color or quantity provided !");
+                alert("No color or available quantity provided !")
             }
         }
 });
 
 function sameProduct(id, color){
-    for (var i = 0; i < localStorage.length; i++){
-        let actualItem = localStorage.getItem(localStorage.key(i))
-        console.log(JSON.parse(actualItem)[0] + "  " + id);
-        console.log(JSON.parse(actualItem)[1] + "  " + color);
-        if(JSON.parse(actualItem)[0] == id && JSON.parse(actualItem)[1] == color){
-            console.log("item already in the cart !")
-            return true;
-        }
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        if(i.id == id && i.color == color) return true
     }
 
-    return false;
+    return false
 }
 
 function findItemByIdAnColor(id, color){
-    for (var i = 0; i < localStorage.length; i++){
-        let actualItem = localStorage.getItem(localStorage.key(i))
-        if(JSON.parse(actualItem)[0] === id && JSON.parse(actualItem)[1] === color){
-            
-            return actualItem;
-        }
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        console.log("TEST "+ i)
+        if(i.id === id && i.color === color) return i
     }
 }
+
+function editQuantity(value, quant){
+    let actualBasket = _lsGet('basket')
+
+    for(let i of actualBasket){
+        if(JSON.stringify(value) === JSON.stringify(i)) i.quantity = quant
+    }
+
+    _lsSet('basket', actualBasket)
+}
+
+function _lsGet(key) {
+    try {
+        if(localStorage.getItem(key)){
+            return JSON.parse(localStorage.getItem(key))
+        }
+        else{
+            return undefined
+        }
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+function _lsSet(key, val){
+    try {
+        localStorage.setItem(key, JSON.stringify(val))
+        console.log("NEW ITEM ADDED IN LOCALSTORAGE\n"+ JSON.stringify(val))
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+
