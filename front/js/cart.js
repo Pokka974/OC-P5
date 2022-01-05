@@ -1,26 +1,95 @@
-let actualBasket = _lsGet('basket')
+
+let actualURL = window.location.href
+let URLEl = actualURL.split('/')
 const section = document.getElementById("cart__items")
 
-for(let i of actualBasket){
-
-    fetch('http://localhost:3000/api/products/'+ i.id)
-    .then(response => response.json())
-    .then(product => {
-
-        displayProduct(product, i)
-    });
+if(URLEl[URLEl.length-1].startsWith('confirmation')){
+    displayConfirmation()
+}else{
+    displayCart()
 }
 
-document.getElementById('cart__order__form').addEventListener('submit', e => {
-    e.preventDefault()
-    console.log('clic on submit')
-    checkInputs()
-    if(allInputsAreValid()){
-        // Create an Object
-        // POST in API
-    }
+function displayCart(){
+    console.log("CART PAGE !")
     
-});
+    let actualBasket = _lsGet('basket')
+    
+    let products = new Array()
+    for(let i of actualBasket){
+    products.push(i.id)
+        fetch('http://localhost:3000/api/products/'+ i.id)
+        .then(response => response.json())
+        .then(product => {
+
+            displayProduct(product, i)
+        });
+    }
+
+    document.getElementById('cart__order__form').addEventListener('submit', e => {
+        e.preventDefault()
+        console.log('clic on submit')
+        let contact = checkInputs()
+        let orderIdValue = document.getElementById('orderId')
+        if(allInputsAreValid()){
+            console.log(JSON.stringify({contact, products}))
+            fetch('http://localhost:3000/api/products/order', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                
+                body: JSON.stringify({contact, products})
+            })
+            .then(function(res){
+                if(res.ok){
+                    return(res.json())
+                }else{
+                    console.error('No order ID generated')
+                }
+            })
+            .then(function(orderRes) {
+                window.location.replace('http://127.0.0.1:5500/front/html/confirmation.html?orderId=' + orderRes.orderId)
+            })
+            .catch(function(err){
+                console.error(err)
+            })
+        }
+    });
+
+    window.addEventListener('load', function (){
+
+        let allInputs = document.getElementsByClassName("itemQuantity")
+        for(let i of allInputs){
+            i.addEventListener('change', (e) => {
+                console.log(e.target.valueAsNumber)
+    
+                //Updating the quantity in view and localStorage
+                updateQuantity(i)
+            })
+        }
+    
+        let allDeleteBtn = document.getElementsByClassName("deleteItem")
+        // deleteItem(allDeleteBtn[0])
+        for(let j of allDeleteBtn){
+            j.addEventListener('click', () => {
+                deleteItem(j)
+            })
+        }
+        updateTotalQuantity()
+        updateTotalPrice()
+    })
+}
+
+function displayConfirmation(){
+    console.log("CONFIRMATION PAGE !")
+
+    const orderIdSpan = document.getElementById('orderId')
+    const orderId = new URL(window.location.href).searchParams.get('orderId')
+
+    orderIdSpan.textContent = orderId
+}
+
 
 function allInputsAreValid(){
     let errors = document.getElementsByClassName('error')
@@ -29,12 +98,19 @@ function allInputsAreValid(){
         console.log("it's not valid")
         return false;
     } else {
-        console.log('Its valid !')
+        console.log("It's valid !")
         return true;
     }
 }
 
 function checkInputs(){
+    let contact = {
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        email: ''
+    }
     const firstName = document.getElementsByClassName('cart__order__form__question')[0].children[1]
     const lastName = document.getElementsByClassName('cart__order__form__question')[1].children[1]
     const address = document.getElementsByClassName('cart__order__form__question')[2].children[1]
@@ -48,6 +124,7 @@ function checkInputs(){
         setErrorFor(firstName, 'Not a valid first name')
     }else {
         setSuccessFor(firstName)
+        contact.firstName = firstName.value
     }
 
     if(lastName.value == ''){
@@ -56,6 +133,7 @@ function checkInputs(){
         setErrorFor(lastName, 'Not a valid last name')
     } else {
         setSuccessFor(lastName)
+        contact.lastName = lastName.value
     }
 
     if(address.value == ''){
@@ -64,6 +142,7 @@ function checkInputs(){
         setErrorFor(address, 'Not a valid address')
     } else {
         setSuccessFor(address)
+        contact.address = address.value
     }
 
     if(city.value == ''){
@@ -72,6 +151,7 @@ function checkInputs(){
         setErrorFor(city, 'Not a valid city')
     } else {
         setSuccessFor(city)
+        contact.city = city.value
     }
 
     if(email.value == ''){
@@ -80,7 +160,10 @@ function checkInputs(){
         setErrorFor(email, 'Not a valid email')
     } else {
         setSuccessFor(email)
+        contact.email = email.value
     }
+
+    return contact;
 }
 
 function setErrorFor(input, message) {
@@ -113,28 +196,7 @@ function isACity(city){
 function isAnEmail(email){
     return /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(email);
 }
-window.addEventListener('load', function (){
 
-    let allInputs = document.getElementsByClassName("itemQuantity")
-    for(let i of allInputs){
-        i.addEventListener('change', (e) => {
-            console.log(e.target.valueAsNumber)
-
-            //Updating the quantity in view and localStorage
-            updateQuantity(i)
-        })
-    }
-
-    let allDeleteBtn = document.getElementsByClassName("deleteItem")
-    // deleteItem(allDeleteBtn[0])
-    for(let j of allDeleteBtn){
-        j.addEventListener('click', () => {
-            deleteItem(j)
-        })
-    }
-    updateTotalQuantity()
-    updateTotalPrice()
-})
 
 function updateQuantity(i){
     let quant = i.closest(".cart__item__content__settings__quantity").firstElementChild
@@ -239,7 +301,6 @@ function updateTotalQuantity(){
     let allQuantEl = document.getElementsByClassName('cart__item__content__settings__quantity')
 
     for(let i of allQuantEl){
-        console.log(i.firstChild.textContent.split(' ')[2])
         totalQuantity += parseInt(i.firstChild.textContent.split(' ')[2])
     }
 
@@ -349,6 +410,16 @@ function editQuantity(value, quant){
     _lsSet('basket', actualBasket)
 }
 
+
+function _lsSet(key, val){
+    try {
+        localStorage.setItem(key, JSON.stringify(val))
+        console.log("NEW ITEM ADDED IN LOCALSTORAGE\n"+ JSON.stringify(val))
+    } catch (e) {
+        console.error(e)
+    }
+}
+
 function _lsGet(key) {
     try {
         if(localStorage.getItem(key)){
@@ -357,15 +428,6 @@ function _lsGet(key) {
         else{
             return undefined
         }
-    } catch (e) {
-        console.error(e)
-    }
-}
-
-function _lsSet(key, val){
-    try {
-        localStorage.setItem(key, JSON.stringify(val))
-        console.log("NEW ITEM ADDED IN LOCALSTORAGE\n"+ JSON.stringify(val))
     } catch (e) {
         console.error(e)
     }
