@@ -75,16 +75,16 @@ fetch('http://localhost:3000/api/products/'+ id)
         }
 });
 
+//return true if there is an item with the same id and color in basket
 function sameProduct(id, color){
     let actualBasket = _lsGet('basket')
-
     for(let i of actualBasket){
         if(i.id == id && i.color == color) return true
     }
-
     return false
 }
 
+//return the item with the same id and color in basket (if it exists)
 function findItemByIdAnColor(id, color){
     let actualBasket = _lsGet('basket')
 
@@ -93,17 +93,16 @@ function findItemByIdAnColor(id, color){
         if(i.id === id && i.color === color) return i
     }
 }
-
+//find the concerned item in basket and edit his quantity property
 function editQuantity(value, quant){
     let actualBasket = _lsGet('basket')
-
     for(let i of actualBasket){
         if(JSON.stringify(value) === JSON.stringify(i)) i.quantity = quant
     }
-
     _lsSet('basket', actualBasket)
 }
 
+//return the parsed element from localstorage
 function _lsGet(key) {
     try {
         if(localStorage.getItem(key)){
@@ -117,6 +116,7 @@ function _lsGet(key) {
     }
 }
 
+//Add or edit a stringify selected element in localstorage
 function _lsSet(key, val){
     try {
         localStorage.setItem(key, JSON.stringify(val))

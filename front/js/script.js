@@ -1,11 +1,8 @@
-// if(typeof(localStorage.getItem('basket')) != 'undefined') localStorage.setItem('basket', new Array())
-
 fetch('http://localhost:3000/api/products')
   .then(response => response.json())
   .then(data => {
-      const list = document.getElementById('listItems');
+      const section = document.getElementById('items')
       for(let i of data){
-        let li = document.createElement('li')
         let a = document.createElement('a')
         a.href = './product.html?id=' + i._id;
         let article = document.createElement('article')
@@ -17,6 +14,6 @@ fetch('http://localhost:3000/api/products')
         let p = document.createElement('p')
         p.textContent = i.description;
 
-        list.appendChild(li).appendChild(a).appendChild(article).append(img, h3, p);
+        section.appendChild(a).appendChild(article).append(img, h3, p);
       }
   });

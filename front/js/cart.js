@@ -9,12 +9,14 @@ if(URLEl[URLEl.length-1].startsWith('confirmation')){
     displayCart()
 }
 
+//load de code for cart.html
 function displayCart(){
     console.log("CART PAGE !")
     
+    let products = new Array()
     let actualBasket = _lsGet('basket')
     
-    let products = new Array()
+    //loop in basket local storage
     for(let i of actualBasket){
     products.push(i.id)
         fetch('http://localhost:3000/api/products/'+ i.id)
@@ -25,6 +27,7 @@ function displayCart(){
         });
     }
 
+    //submit button listener
     document.getElementById('cart__order__form').addEventListener('submit', e => {
         e.preventDefault()
         console.log('clic on submit')
@@ -57,9 +60,12 @@ function displayCart(){
         }
     });
 
+    //execute the code inside AFTER the page loaded
     window.addEventListener('load', function (){
 
         let allInputs = document.getElementsByClassName("itemQuantity")
+
+        //loop in quantity changes input
         for(let i of allInputs){
             i.addEventListener('change', (e) => {
                 console.log(e.target.valueAsNumber)
@@ -76,11 +82,14 @@ function displayCart(){
                 deleteItem(j)
             })
         }
+
+        //update the total price and quantity
         updateTotalQuantity()
         updateTotalPrice()
     })
 }
 
+//load the code for confirmation.html
 function displayConfirmation(){
     console.log("CONFIRMATION PAGE !")
 
@@ -90,7 +99,7 @@ function displayConfirmation(){
     orderIdSpan.textContent = orderId
 }
 
-
+//check if the form inputs are all valid or not
 function allInputsAreValid(){
     let errors = document.getElementsByClassName('error')
     console.log(errors)
@@ -103,6 +112,7 @@ function allInputsAreValid(){
     }
 }
 
+//uses RegEx for all the form inputs
 function checkInputs(){
     let contact = {
         firstName: '',
@@ -166,6 +176,7 @@ function checkInputs(){
     return contact;
 }
 
+//handle the error message and class changes for form's input
 function setErrorFor(input, message) {
 	const formControl = input.parentElement;
 	const errorP = formControl.children[2]
@@ -173,11 +184,13 @@ function setErrorFor(input, message) {
 	errorP.innerText = message;
 }
 
+//handle the class changes for the form's inputs when success
 function setSuccessFor(input) {
 	const formControl = input.parentElement;
 	formControl.className = 'cart__order__form__question success';
 }
 
+//the following functions return true if it succeeds the RegEx tests
 function isAName(name){
     return /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u.test(name);
 }
@@ -197,7 +210,7 @@ function isAnEmail(email){
     return /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/.test(email);
 }
 
-
+//Update the quantity of the corresponding item in local storage and in the DOM
 function updateQuantity(i){
     let quant = i.closest(".cart__item__content__settings__quantity").firstElementChild
 
@@ -223,8 +236,9 @@ function updateQuantity(i){
     
 }
 
+//Delete the corresponding item in the local storage and in the DOM
 function deleteItem(i){
-    if(confirm('Voulez vous vraiment supprimer article du panier ?')){
+    if(confirm('Voulez vous vraiment supprimer l\'article du panier ?')){
         // cart__item
         let promise2
         let id = i.closest('.cart__item').dataset.id
@@ -266,6 +280,7 @@ function deleteItem(i){
     
 }
 
+// update the total price in the DOM
 function updateTotalPrice(){
 
     let totalPriceElement = document.getElementById('totalPrice')
@@ -294,6 +309,7 @@ function updateTotalPrice(){
     totalPriceElement.textContent = totalPrice
 }
 
+//Update the total quantity in the DOM
 function updateTotalQuantity(){
     let totalQuantityElement = document.getElementById('totalQuantity')
 
@@ -309,6 +325,7 @@ function updateTotalQuantity(){
     totalQuantityElement.textContent = totalQuantity
 }
 
+//display the corresponding product into the DOM
 function displayProduct(product, i){
     //ADD article
     let article = document.createElement("article")
@@ -381,6 +398,7 @@ function displayProduct(product, i){
     divSettingsDelete.appendChild(p4)
 }
 
+//Check if the corresponding item according to id and color exists in local storage
 function sameProduct(id, color){
     let actualBasket = _lsGet('basket')
 
@@ -391,6 +409,7 @@ function sameProduct(id, color){
     return false
 }
 
+//Return and item from local storage according to id and color
 function findItemByIdAnColor(id, color){
     let actualBasket = _lsGet('basket')
 
@@ -400,6 +419,7 @@ function findItemByIdAnColor(id, color){
     }
 }
 
+//Changes the quantity of an item in basket local storage
 function editQuantity(value, quant){
     let actualBasket = _lsGet('basket')
 
@@ -410,7 +430,7 @@ function editQuantity(value, quant){
     _lsSet('basket', actualBasket)
 }
 
-
+//Add item in local storage
 function _lsSet(key, val){
     try {
         localStorage.setItem(key, JSON.stringify(val))
@@ -420,6 +440,7 @@ function _lsSet(key, val){
     }
 }
 
+//Get item from local storage
 function _lsGet(key) {
     try {
         if(localStorage.getItem(key)){

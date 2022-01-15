@@ -1,3 +1,4 @@
+
 /*********/
 /*GENERAL*/
 /*********/
@@ -19,10 +20,6 @@ h2 {
 	margin-bottom: 60px;
 	text-align: center;
 }
-li{
-	list-style: none;
-}
-
 .logo {
 	height: 100px;
 }
@@ -129,25 +126,21 @@ main {
 }
 
 /*items*/
-#listItems {
+.items {
 	margin-bottom: 135px;
 	display: flex;
-	justify-content: space-evenly;
-	gap: 20px;
+	justify-content: space-around;
 	flex-wrap: wrap;
 }
-#listItems li{
-	width: 400px;
-}
-
-#listItems a{
+.items a {
+	width: 21%;
 	text-decoration: none;
 	color: unset;
 }
-#listItems a:hover article {
+.items a:hover article {
 	box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
 }
-#listItems article {
+.items article {
 	background-color: var(--secondary-color);
 	display: flex;
 	flex-direction: column;
@@ -157,19 +150,19 @@ main {
 	width: 100%;
 	border-radius: 10px;
 }
-#listItems article img {
+.items article img {
 	width: 160px;
 	height: 160px;
 	object-fit: cover;
 	border-radius: 10px;
 }
-#listItems article h3 {
+.items article h3 {
 	font-size: 22px;
 	font-weight: 700;
 	text-align: center;
 	text-transform: uppercase;
 }
-#listItems article p {
+.items article p {
 	text-align: center;
 	padding-left: 23px;
 	padding-right: 23px;
