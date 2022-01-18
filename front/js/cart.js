@@ -2,7 +2,6 @@
 let actualURL = window.location.href
 let URLEl = actualURL.split('/')
 const section = document.getElementById("cart__items")
-
 if(URLEl[URLEl.length-1].startsWith('confirmation')){
     displayConfirmation()
 }else{
@@ -46,13 +45,15 @@ function displayCart(){
             })
             .then(function(res){
                 if(res.ok){
+                    localStorage.removeItem('basket')
                     return(res.json())
                 }else{
                     console.error('No order ID generated')
                 }
             })
             .then(function(orderRes) {
-                window.location.replace('http://127.0.0.1:5500/front/html/confirmation.html?orderId=' + orderRes.orderId)
+                let domain = URLEl[2]
+                window.location.replace('http://'+ domain + '/front/html/confirmation.html?orderId=' + orderRes.orderId)
             })
             .catch(function(err){
                 console.error(err)
@@ -246,9 +247,7 @@ function deleteItem(i){
         //GET the color and the name of the corresponding item
         let bloc = i.closest('.cart__item')
         let bloc_description = i.closest('.cart__item__content').firstElementChild
-        let name = bloc_description.children[0]
         let color = bloc_description.children[1]
-        console.log('Click on item ' + name.textContent + ' ' + color.textContent)
         
         
         let actualBasket = _lsGet('basket')
@@ -271,7 +270,6 @@ function deleteItem(i){
                 resolve(bloc.remove())
             })
         }
-            
         promise2.then((value) =>{
             updateTotalQuantity()
             updateTotalPrice()

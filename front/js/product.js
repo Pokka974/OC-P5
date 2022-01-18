@@ -97,7 +97,15 @@ function findItemByIdAnColor(id, color){
 function editQuantity(value, quant){
     let actualBasket = _lsGet('basket')
     for(let i of actualBasket){
-        if(JSON.stringify(value) === JSON.stringify(i)) i.quantity = quant
+        if(JSON.stringify(value) === JSON.stringify(i)){
+            let thisQuant = parseInt(i.quantity)
+            thisQuant += parseInt(quant)
+            if(thisQuant > 100){
+                alert('Impossible d\'ajouter plus de 100 fois le même produit au panier !')
+            }else{
+                i.quantity = thisQuant
+            }
+        } 
     }
     _lsSet('basket', actualBasket)
 }
